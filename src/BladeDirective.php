@@ -92,9 +92,9 @@ class BladeDirective
         }
 
         // If we're dealing with a collection, we'll
-        // use a hashed version of its contents.
+        // use a hashed version of items keys.
         if ($item instanceof \Illuminate\Support\Collection) {
-            return md5($item);
+            return md5($item->map->getKey());
         }
 
         throw new Exception('Could not determine an appropriate cache key.');
