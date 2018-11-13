@@ -19,6 +19,10 @@ class MatryoshkaServiceProvider extends ServiceProvider
             $kernel->pushMiddleware('Laracasts\Matryoshka\FlushViews');
         }
 
+        $this->publishes([
+            __DIR__ . '/../config/matryoshka.php' => config_path('matryoshka.php'),
+        ], 'config');
+
         Blade::directive('cache', function ($expression) {
             $version = explode('.', $this->app::VERSION);
             // Starting with laravel 5.3 the parens are not included in the expression string.
@@ -38,7 +42,15 @@ class MatryoshkaServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app->singleton(BladeDirective::class);
+        $this->mergeConfigFrom(
+            __DIR__ . '/../config/matryoshka.php', 'matryoshka'
+        );
+
+        $this->app->singleton(BladeDirective::class, function ($app) {
+            return new BladeDirective(
+                $app->config->get('matryoshka'),
+                $app['cache.store']
+            );
+        });
     }
 }
-

@@ -2,25 +2,35 @@
 
 namespace Laracasts\Matryoshka;
 
-use Illuminate\Contracts\Cache\Repository as Cache;
+use Illuminate\Cache\Repository as Cache;
 
 class RussianCaching
 {
     /**
-     * The cache repository.
+     * Instance of cache manager.
      *
      * @var Cache
      */
     protected $cache;
 
     /**
+     * Lifetime of the cache.
+     *
+     * @var int
+     */
+    protected $expires;
+
+    /**
      * Create a new class instance.
      *
-     * @param Cache $cache
+     * @param Cache        $cache
+     * @param array|null   $tags
+     * @param int          $expires
      */
-    public function __construct(Cache $cache)
+    public function __construct(Cache $cache, $tags = null, $expires = 60)
     {
-        $this->cache = $cache;
+        $this->cache = $tags ? $cache->tags($tags) : $cache;
+        $this->expires = $expires;
     }
 
     /**
@@ -34,8 +44,7 @@ class RussianCaching
         $key = $this->normalizeCacheKey($key);
 
         return $this->cache
-            ->tags('views')
-            ->rememberForever($key, function () use ($fragment) {
+            ->remember($key, $this->expires, function () use ($fragment) {
                 return $fragment;
             });
     }
@@ -49,9 +58,7 @@ class RussianCaching
     {
         $key = $this->normalizeCacheKey($key);
 
-        return $this->cache
-            ->tags('views')
-            ->has($key);
+        return $this->cache->has($key);
     }
 
     /**
@@ -68,4 +75,3 @@ class RussianCaching
         return $key;
     }
 }
-

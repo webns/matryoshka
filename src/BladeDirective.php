@@ -3,9 +3,17 @@
 namespace Laracasts\Matryoshka;
 
 use Exception;
+use Illuminate\Cache\Repository;
 
 class BladeDirective
 {
+    /**
+     * The config instance
+     *
+     * @var array
+     */
+    protected $config;
+
     /**
      * The cache instance.
      *
@@ -23,11 +31,19 @@ class BladeDirective
     /**
      * Create a new instance.
      *
+     * @param array          $config
      * @param RussianCaching $cache
      */
-    public function __construct(RussianCaching $cache)
+    public function __construct(array $config, Repository $cache)
     {
-        $this->cache = $cache;
+        $this->config = $config;
+
+        // Create caching instance
+        $this->cache = new RussianCaching(
+            $cache,
+            $this->config['cache_tags'],
+            $this->config['cache_expires']
+        );
     }
 
     /**
@@ -68,19 +84,19 @@ class BladeDirective
         if (is_string($item) || is_string($key)) {
             return is_string($item) ? $item : $key;
         }
-        
+
         // Otherwise we'll try to use the item to calculate
         // the cache key, itself.
         if (is_object($item) && method_exists($item, 'getCacheKey')) {
             return $item->getCacheKey();
         }
-    
-        // If we're dealing with a collection, we'll 
+
+        // If we're dealing with a collection, we'll
         // use a hashed version of its contents.
         if ($item instanceof \Illuminate\Support\Collection) {
             return md5($item);
         }
-    
+
         throw new Exception('Could not determine an appropriate cache key.');
     }
 }

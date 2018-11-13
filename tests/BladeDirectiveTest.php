@@ -28,7 +28,7 @@ class BladeDirectiveTest extends TestCase
     function it_can_use_a_string_as_the_cache_key()
     {
         $doll = $this->prophesize(RussianCaching::class);
-        $directive = new BladeDirective($doll->reveal());
+        $directive = new BladeDirective([], $doll->reveal());
 
         $doll->has('foo')->shouldBeCalled();
         $directive->setUp('foo');
@@ -40,8 +40,8 @@ class BladeDirectiveTest extends TestCase
     function it_can_use_a_collection_as_the_cache_key()
     {
         $doll = $this->prophesize(RussianCaching::class);
-        $directive = new BladeDirective($doll->reveal());
-        
+        $directive = new BladeDirective([], $doll->reveal());
+
         $collection = collect(['one', 'two']);
         $doll->has(md5($collection))->shouldBeCalled();
         $directive->setUp($collection);
@@ -53,9 +53,9 @@ class BladeDirectiveTest extends TestCase
     function it_can_use_the_model_to_determine_the_cache_key()
     {
         $doll = $this->prophesize(RussianCaching::class);
-        $directive = new BladeDirective($doll->reveal());
+        $directive = new BladeDirective([], $doll->reveal());
 
-        $post = $this->makePost(); 
+        $post = $this->makePost();
         $doll->has('Post/1-' . $post->updated_at->timestamp)->shouldBeCalled();
         $directive->setUp($post);
 
@@ -66,7 +66,7 @@ class BladeDirectiveTest extends TestCase
     function it_can_use_a_string_to_override_the_models_cache_key()
     {
         $doll = $this->prophesize(RussianCaching::class);
-        $directive = new BladeDirective($doll->reveal());
+        $directive = new BladeDirective([], $doll->reveal());
 
         $doll->has('override-key')->shouldBeCalled();
         $directive->setUp($this->makePost(), 'override-key');
@@ -75,8 +75,8 @@ class BladeDirectiveTest extends TestCase
     }
 
 
-    /** 
-     * @test 
+    /**
+     * @test
      * @expectedException Exception
      * */
     function it_throws_an_exception_if_it_cannot_determine_the_cache_key()
@@ -94,7 +94,9 @@ class BladeDirectiveTest extends TestCase
 
         $this->doll = new RussianCaching($cache);
 
-        return new BladeDirective($this->doll);
+        $config = include(__DIR__ . '/../config/matryoshka.php');
+
+        return new BladeDirective($config, $this->doll);
     }
 }
 
