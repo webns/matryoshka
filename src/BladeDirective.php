@@ -92,9 +92,9 @@ class BladeDirective
         }
 
         // If we're dealing with a collection, we'll
-        // use a hashed version of items keys.
+        // use a hashed version of items updated_at field.
         if ($item instanceof \Illuminate\Support\Collection) {
-            $key = md5($item->map->getKey());
+            $key = md5($item->pluck('updated_at'));
         }
 
         if (!isset($key)) {
